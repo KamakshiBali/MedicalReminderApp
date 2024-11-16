@@ -10,11 +10,49 @@ public class dashboard {
     static final String DB_PASSWORD = "root123@123"; // Replace with your MySQL password
 
     public static void main(String[] args) {
-        new AuthFrame();
+        new WelcomePage();
     }
 }
 
-class AuthFrame extends JFrame {
+// Welcome Page
+class WelcomePage extends JFrame {
+    public WelcomePage() {
+        setTitle("Medical Reminder App");
+        setSize(500, 300);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(3, 1, 10, 10));
+        JLabel welcomeLabel = new JLabel("Welcome to Medical Reminder App", JLabel.CENTER);
+        welcomeLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        JButton signupButton = new JButton("Signup");
+        JButton loginButton = new JButton("Login");
+
+        panel.add(welcomeLabel);
+        panel.add(signupButton);
+        panel.add(loginButton);
+
+        add(panel);
+
+        // Signup button action
+        signupButton.addActionListener(e -> {
+            new SignupForm();
+            dispose();
+        });
+
+        // Login button action
+        loginButton.addActionListener(e -> {
+            new LoginForm();
+            dispose();
+        });
+
+        setVisible(true);
+    }
+}
+
+// Signup Form
+class SignupForm extends JFrame {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JTextField dobField;
@@ -22,15 +60,14 @@ class AuthFrame extends JFrame {
     private JTextField mobileField;
     private JComboBox<String> genderComboBox;
 
-    public AuthFrame() {
-        setTitle("User Authentication");
-        setSize(400, 400);
+    public SignupForm() {
+        setTitle("Signup");
+        setSize(500, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Create Signup Form
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(7, 2, 10, 10));
+        panel.setLayout(new GridLayout(8, 2, 10, 10));
 
         JLabel usernameLabel = new JLabel("Username:");
         usernameField = new JTextField();
@@ -46,7 +83,7 @@ class AuthFrame extends JFrame {
         genderComboBox = new JComboBox<>(new String[]{"Select", "Male", "Female", "Other"});
 
         JButton signupButton = new JButton("Signup");
-        JButton loginButton = new JButton("Login");
+        JButton backButton = new JButton("Back");
 
         panel.add(usernameLabel);
         panel.add(usernameField);
@@ -61,7 +98,7 @@ class AuthFrame extends JFrame {
         panel.add(genderLabel);
         panel.add(genderComboBox);
         panel.add(signupButton);
-        panel.add(loginButton);
+        panel.add(backButton);
 
         add(panel);
 
@@ -102,6 +139,47 @@ class AuthFrame extends JFrame {
             }
         });
 
+        // Back Button Action
+        backButton.addActionListener(e -> {
+            new WelcomePage();
+            dispose();
+        });
+
+        setVisible(true);
+    }
+}
+
+// Login Form
+class LoginForm extends JFrame {
+    private JTextField usernameField;
+    private JPasswordField passwordField;
+
+    public LoginForm() {
+        setTitle("Login");
+        setSize(400, 300);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(4, 2, 10, 10));
+
+        JLabel usernameLabel = new JLabel("Username:");
+        usernameField = new JTextField();
+        JLabel passwordLabel = new JLabel("Password:");
+        passwordField = new JPasswordField();
+
+        JButton loginButton = new JButton("Login");
+        JButton backButton = new JButton("Back");
+
+        panel.add(usernameLabel);
+        panel.add(usernameField);
+        panel.add(passwordLabel);
+        panel.add(passwordField);
+        panel.add(loginButton);
+        panel.add(backButton);
+
+        add(panel);
+
         // Login Button Action
         loginButton.addActionListener(new ActionListener() {
             @Override
@@ -131,6 +209,12 @@ class AuthFrame extends JFrame {
                     JOptionPane.showMessageDialog(null, "Database error occurred.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
+        });
+
+        // Back Button Action
+        backButton.addActionListener(e -> {
+            new WelcomePage();
+            dispose();
         });
 
         setVisible(true);
