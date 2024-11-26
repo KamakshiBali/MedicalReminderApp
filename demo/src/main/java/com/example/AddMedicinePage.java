@@ -14,7 +14,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class AddMedicinePage {
-    private Stage stage;
+    // private Stage primaryStage;
+
+    private Stage primaryStage;
     private int userId;
     private static final String DB_URL = "jdbc:mysql://localhost:3306/medicenes";
     private static final String DB_USERNAME = "root";
@@ -29,7 +31,7 @@ public class AddMedicinePage {
     private VBox reminderTimesList = new VBox(10);
 
     public AddMedicinePage(Stage stage, int userId) {
-        this.stage = stage;
+        this.primaryStage = stage;
         this.userId = userId;
     }
 
@@ -70,7 +72,7 @@ public class AddMedicinePage {
 
         // Reminder Type ComboBox
         Label reminderTypeLabel = new Label("Reminder Type: ");
-        reminderTypeComboBox.getItems().addAll("X times a day", "Every X hours");
+        reminderTypeComboBox.getItems().addAll("X times a day");
         reminderTypeComboBox.setValue("X times a day");
 
         // Default reminder options
@@ -90,6 +92,16 @@ public class AddMedicinePage {
         addMedicineButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10px;");
         addMedicineButton.setOnAction(e -> addMedicine());
 
+        Button backButton = new Button("Back");
+        backButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px 20px; -fx-border-radius: 10;");
+        // Set action for the back button
+        backButton.setOnAction(event -> {
+            // Create a new MedicinePage instance
+            MedicenePage medicenePage = new MedicenePage(primaryStage, userId);
+            // Show the page with the current date
+            medicenePage.showPage();
+        });
+
         // Add elements to the layout
         layout.getChildren().addAll(
             medicineNameBox,
@@ -97,13 +109,14 @@ public class AddMedicinePage {
             reminderTypeComboBox,
             reminderTimeBox,
             scheduleBox,
-            addMedicineButton
+            addMedicineButton,
+            backButton
         );
 
-        Scene scene = new Scene(layout, 600, 400);
-        stage.setScene(scene);
-        stage.setTitle("Add Medicine");
-        stage.show();
+        Scene scene = new Scene(layout, 600, 800);
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("Add Medicine");
+        primaryStage.show();
     }
 
     private void addReminderTime() {
@@ -186,39 +199,7 @@ public class AddMedicinePage {
             addReminderButton.setOnAction(e -> addReminderTime());
             reminderTimeBox.getChildren().add(addReminderButton);
     
-        } else if (reminderType.equals("Every X hours")) {
-            // Ask for hours and time
-            Label hourLabel = new Label("Remind every X hours: ");
-            ComboBox<Integer> hoursComboBox = new ComboBox<>();
-            hoursComboBox.getItems().addAll(1, 2, 3, 4, 5, 6, 12);
-            hoursComboBox.setValue(1); // Default to 1 hour
-            reminderTimeBox.getChildren().addAll(hourLabel, hoursComboBox);
-    
-            // Add button for adding a reminder time
-            addReminderButton.setOnAction(e -> addEveryXHoursReminder(hoursComboBox.getValue()));
-            reminderTimeBox.getChildren().add(addReminderButton);
-        }
-    }
-    
-    private void addEveryXHoursReminder(int hours) {
-        // Add every X hour reminder logic
-        // We now add a start hour selection ComboBox
-        ComboBox<Integer> startHourComboBox = new ComboBox<>();
-        startHourComboBox.getItems().addAll(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
-        startHourComboBox.setValue(1); // Default to start at 1 hour
-    
-        // Store the reminder type (every X hours) and time
-        String reminderTime = "Every " + hours + " hours, starting at " + startHourComboBox.getValue() + " o'clock";
-    
-        // Add the time to the reminderTimesList when selected
-        Button addButton = new Button("Add Reminder");
-        addButton.setOnAction(e -> {
-            reminderTimesList.getChildren().add(new Label(reminderTime));
-        });
-    
-        // Add the start hour combo box and add button to the UI
-        reminderTimeBox.getChildren().add(startHourComboBox);
-        reminderTimeBox.getChildren().add(addButton);
+        } 
     }
     
 
@@ -255,7 +236,7 @@ public class AddMedicinePage {
     
         // Save the data to the database
         saveMedicineToDatabase(medName, reminderTimes, startDate, daysCount);
-        stage.close(); // Close the add medicine page
+        primaryStage.close(); // Close the add medicine page
     }
     
     // Helper method to show alerts

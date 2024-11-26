@@ -34,7 +34,7 @@ public class ChangeDatePage {
         backButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px 20px; -fx-border-radius: 8;");
 
         // Set action for the confirm button
-        confirmButton.setOnAction(event -> {
+        confirmButton.setOnAction(event -> { 
             LocalDate selectedDate = datePicker.getValue();
             if (selectedDate != null) {
                 // Create a new MedicinePage instance
@@ -73,5 +73,6 @@ public class ChangeDatePage {
         primaryStage.setScene(changeDateScene);
         primaryStage.setTitle("Change Date");
         primaryStage.show();
+        
     }
 }

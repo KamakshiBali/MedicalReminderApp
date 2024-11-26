@@ -59,7 +59,7 @@ public class EditMedicinePage {
         layout.getChildren().addAll(titleLabel, medNameLabel, medNameField, dateLabel, datePicker, timeLabel, timeField, saveButton);
 
         // Set the scene
-        Scene editScene = new Scene(layout, 400, 300);
+        Scene editScene = new Scene(layout, 600, 800);
         primaryStage.setScene(editScene);
         primaryStage.setTitle("Edit Medicine");
         primaryStage.show();

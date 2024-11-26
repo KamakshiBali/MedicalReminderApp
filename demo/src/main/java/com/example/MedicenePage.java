@@ -1,6 +1,4 @@
 package com.example;
-
-import com.example.AddMedicinePage;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -260,7 +258,7 @@ public class MedicenePage {
         mainLayout.getChildren().addAll(userInfoContainer, mediceneContainer, addMediceneButton, changeDateButton);
 
         // Create and set the scene
-        Scene mediceneScene = new Scene(mainLayout, 800, 600);
+        Scene mediceneScene = new Scene(mainLayout, 600, 800);
         primaryStage.setScene(mediceneScene);
         primaryStage.setTitle("Medicines");
         primaryStage.show();

@@ -1,15 +1,41 @@
 package com.example;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.sql.Statement;
+
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.sql.*;
-
 public class DashboardApp extends Application {
+    ImageView background = createBackgroundImage(getClass().getResource("medicare.jpg").toExternalForm());
+
+    private ImageView createBackgroundImage(String imagePath) {
+        ImageView background = new ImageView(new Image(imagePath));
+        background.setFitWidth(600);
+        background.setFitHeight(800);
+        return background;
+    }
+
     // Database credentials
     static final String DB_URL = "jdbc:mysql://localhost:3306/medicenes"; // Replace with your database URL
     static final String DB_USERNAME = "root"; // Replace with your MySQL username
@@ -34,31 +60,32 @@ public class DashboardApp extends Application {
         VBox layout = new VBox(30);
         layout.setAlignment(Pos.CENTER);
         layout.setPadding(new Insets(40));
-        layout.setStyle("-fx-background-color: #f2f9f9;");
+        layout.setStyle("-fx-background-color: rgba(255, 255, 255, 0.8);");
 
-        Label welcomeLabel = new Label("Welcome to Medical Reminder App");
+        Label welcomeLabel = new Label("Welcome to Medi-Care!");
         welcomeLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2E8B57;");
 
         Button signupButton = new Button("Signup");
         signupButton.setPrefWidth(150);
-        signupButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px 20px; -fx-border-radius: 10;");
+        signupButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px 20px; -fx-border-radius: 10;");
         signupButton.setOnAction(e -> showSignupScene());
 
         Button loginButton = new Button("Login");
         loginButton.setPrefWidth(150);
-        loginButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px 20px; -fx-border-radius: 10;");
+        loginButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px 20px; -fx-border-radius: 10;");
         loginButton.setOnAction(e -> showLoginScene());
 
         layout.getChildren().addAll(welcomeLabel, signupButton, loginButton);
 
-        Scene welcomeScene = new Scene(layout, 500, 400);
+        StackPane root = new StackPane(background, layout);
+        Scene welcomeScene = new Scene(root, 600, 800);
         primaryStage.setScene(welcomeScene);
         primaryStage.show();
     }
 
     private void showSignupScene() {
         GridPane grid = createFormGridPane();
-        grid.setStyle("-fx-background-color: #f9f9f9;");
+        grid.setStyle("-fx-background-color: rgba(255, 255, 255, 0.8);");
 
         // Form Fields
         TextField usernameField = new TextField();
@@ -85,7 +112,7 @@ public class DashboardApp extends Application {
         grid.add(genderComboBox, 1, 5);
 
         Button signupButton = new Button("Signup");
-        signupButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px 20px; -fx-border-radius: 10;");
+        signupButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px 20px; -fx-border-radius: 10;");
         signupButton.setOnAction(e -> {
             String username = usernameField.getText();
             String password = passwordField.getText();
@@ -141,13 +168,14 @@ public class DashboardApp extends Application {
         buttonBox.setAlignment(Pos.CENTER);
         grid.add(buttonBox, 0, 6, 2, 1);
 
-        Scene signupScene = new Scene(grid, 500, 400);
+        StackPane root = new StackPane(background, grid);
+        Scene signupScene = new Scene(root, 600, 800);
         primaryStage.setScene(signupScene);
     }
 
     private void showLoginScene() {
         GridPane grid = createFormGridPane();
-        grid.setStyle("-fx-background-color: #f9f9f9;");
+        grid.setStyle("-fx-background-color: rgba(255, 255, 255, 0.8);");
 
         // Form Fields
         TextField usernameField = new TextField();
@@ -160,7 +188,7 @@ public class DashboardApp extends Application {
         grid.add(passwordField, 1, 1);
 
         Button loginButton = new Button("Login");
-        loginButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px 20px; -fx-border-radius: 10;");
+        loginButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px 20px; -fx-border-radius: 10;");
         loginButton.setOnAction(e -> {
             String username = usernameField.getText();
             String password = passwordField.getText();
@@ -198,7 +226,8 @@ public class DashboardApp extends Application {
         buttonBox.setAlignment(Pos.CENTER);
         grid.add(buttonBox, 0, 2, 2, 1);
 
-        Scene loginScene = new Scene(grid, 500, 400);
+        StackPane root = new StackPane(background, grid);
+        Scene loginScene = new Scene(root, 600, 800);
         primaryStage.setScene(loginScene);
     }
 
