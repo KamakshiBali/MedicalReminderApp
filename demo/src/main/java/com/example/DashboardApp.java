@@ -31,30 +31,34 @@ public class DashboardApp extends Application {
     }
 
     private void showWelcomeScene() {
-        VBox layout = new VBox(20);
+        VBox layout = new VBox(30);
         layout.setAlignment(Pos.CENTER);
-        layout.setPadding(new Insets(20));
+        layout.setPadding(new Insets(40));
+        layout.setStyle("-fx-background-color: #f2f9f9;");
 
         Label welcomeLabel = new Label("Welcome to Medical Reminder App");
-        welcomeLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+        welcomeLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2E8B57;");
 
         Button signupButton = new Button("Signup");
         signupButton.setPrefWidth(150);
+        signupButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px 20px; -fx-border-radius: 10;");
         signupButton.setOnAction(e -> showSignupScene());
 
         Button loginButton = new Button("Login");
         loginButton.setPrefWidth(150);
+        loginButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px 20px; -fx-border-radius: 10;");
         loginButton.setOnAction(e -> showLoginScene());
 
         layout.getChildren().addAll(welcomeLabel, signupButton, loginButton);
 
-        Scene welcomeScene = new Scene(layout, 400, 300);
+        Scene welcomeScene = new Scene(layout, 500, 400);
         primaryStage.setScene(welcomeScene);
         primaryStage.show();
     }
 
     private void showSignupScene() {
         GridPane grid = createFormGridPane();
+        grid.setStyle("-fx-background-color: #f9f9f9;");
 
         // Form Fields
         TextField usernameField = new TextField();
@@ -81,58 +85,59 @@ public class DashboardApp extends Application {
         grid.add(genderComboBox, 1, 5);
 
         Button signupButton = new Button("Signup");
-signupButton.setOnAction(e -> {
-    String username = usernameField.getText();
-    String password = passwordField.getText();
-    String dob = dobField.getText();
-    String email = emailField.getText();
-    String mobile = mobileField.getText();
-    String gender = genderComboBox.getValue();
+        signupButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px 20px; -fx-border-radius: 10;");
+        signupButton.setOnAction(e -> {
+            String username = usernameField.getText();
+            String password = passwordField.getText();
+            String dob = dobField.getText();
+            String email = emailField.getText();
+            String mobile = mobileField.getText();
+            String gender = genderComboBox.getValue();
 
-    if (username.isEmpty() || password.isEmpty() || dob.isEmpty() || email.isEmpty() || mobile.isEmpty() || gender == null) {
-        showAlert(Alert.AlertType.ERROR, "Error", "Please fill in all fields.");
-        return;
-    }
+            if (username.isEmpty() || password.isEmpty() || dob.isEmpty() || email.isEmpty() || mobile.isEmpty() || gender == null) {
+                showAlert(Alert.AlertType.ERROR, "Error", "Please fill in all fields.");
+                return;
+            }
 
-    try (Connection conn = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
-        // Insert user into database
-        String query = "INSERT INTO user (username, password, dob, email, mobile, gender) VALUES (?, ?, ?, ?, ?, ?)";
-        PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS); // Retrieve the generated user ID
-        ps.setString(1, username);
-        ps.setString(2, password);
-        ps.setDate(3, Date.valueOf(dob));
-        ps.setString(4, email);
-        ps.setString(5, mobile);
-        ps.setString(6, gender);
+            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+                // Insert user into database
+                String query = "INSERT INTO user (username, password, dob, email, mobile, gender) VALUES (?, ?, ?, ?, ?, ?)";
+                PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS); // Retrieve the generated user ID
+                ps.setString(1, username);
+                ps.setString(2, password);
+                ps.setDate(3, Date.valueOf(dob));
+                ps.setString(4, email);
+                ps.setString(5, mobile);
+                ps.setString(6, gender);
 
-        ps.executeUpdate();
+                ps.executeUpdate();
 
-        // Get the generated user ID
-        ResultSet generatedKeys = ps.getGeneratedKeys();
-        int userId = -1;
-        if (generatedKeys.next()) {
-            userId = generatedKeys.getInt(1); // Retrieve the auto-generated ID
-        }
+                // Get the generated user ID
+                ResultSet generatedKeys = ps.getGeneratedKeys();
+                int userId = -1;
+                if (generatedKeys.next()) {
+                    userId = generatedKeys.getInt(1); // Retrieve the auto-generated ID
+                }
 
-        if (userId != -1) {
-            showAlert(Alert.AlertType.INFORMATION, "Success", "Signup successful!");
-            showMedicenePage(userId); // Redirect to Medicene page with the new user's ID
-        } else {
-            showAlert(Alert.AlertType.ERROR, "Error", "Could not retrieve user ID.");
-        }
-    } catch (SQLIntegrityConstraintViolationException ex) {
-        showAlert(Alert.AlertType.ERROR, "Error", "Username already exists.");
-    } catch (SQLException ex) {
-        ex.printStackTrace();
-        showAlert(Alert.AlertType.ERROR, "Error", "Database error occurred.");
-    }
-});
-
+                if (userId != -1) {
+                    showAlert(Alert.AlertType.INFORMATION, "Success", "Signup successful!");
+                    showMedicenePage(userId); // Redirect to Medicene page with the new user's ID
+                } else {
+                    showAlert(Alert.AlertType.ERROR, "Error", "Could not retrieve user ID.");
+                }
+            } catch (SQLIntegrityConstraintViolationException ex) {
+                showAlert(Alert.AlertType.ERROR, "Error", "Username already exists.");
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                showAlert(Alert.AlertType.ERROR, "Error", "Database error occurred.");
+            }
+        });
 
         Button backButton = new Button("Back");
+        backButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px 20px; -fx-border-radius: 10;");
         backButton.setOnAction(e -> showWelcomeScene());
 
-        HBox buttonBox = new HBox(10, signupButton, backButton);
+        HBox buttonBox = new HBox(20, signupButton, backButton);
         buttonBox.setAlignment(Pos.CENTER);
         grid.add(buttonBox, 0, 6, 2, 1);
 
@@ -142,6 +147,7 @@ signupButton.setOnAction(e -> {
 
     private void showLoginScene() {
         GridPane grid = createFormGridPane();
+        grid.setStyle("-fx-background-color: #f9f9f9;");
 
         // Form Fields
         TextField usernameField = new TextField();
@@ -154,6 +160,7 @@ signupButton.setOnAction(e -> {
         grid.add(passwordField, 1, 1);
 
         Button loginButton = new Button("Login");
+        loginButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px 20px; -fx-border-radius: 10;");
         loginButton.setOnAction(e -> {
             String username = usernameField.getText();
             String password = passwordField.getText();
@@ -183,23 +190,22 @@ signupButton.setOnAction(e -> {
             }
         });
 
+        Button backButton = new Button("Back");
+        backButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px 20px; -fx-border-radius: 10;");
+        backButton.setOnAction(e -> showWelcomeScene());
 
-                Button backButton = new Button("Back");
-                backButton.setOnAction(e -> showWelcomeScene());
+        HBox buttonBox = new HBox(20, loginButton, backButton);
+        buttonBox.setAlignment(Pos.CENTER);
+        grid.add(buttonBox, 0, 2, 2, 1);
 
-                HBox buttonBox = new HBox(10, loginButton, backButton);
-                buttonBox.setAlignment(Pos.CENTER);
-                grid.add(buttonBox, 0, 2, 2, 1);
-
-                Scene loginScene = new Scene(grid, 400, 300);
-                primaryStage.setScene(loginScene);
-            }
+        Scene loginScene = new Scene(grid, 500, 400);
+        primaryStage.setScene(loginScene);
+    }
 
     private void showMedicenePage(int userId) {
         MedicenePage medicenePage = new MedicenePage(primaryStage, userId);
         medicenePage.showPage(); // Switch to MedicenePage
     }
-    
 
     private GridPane createFormGridPane() {
         GridPane grid = new GridPane();
@@ -217,6 +223,3 @@ signupButton.setOnAction(e -> {
         alert.showAndWait();
     }
 }
-
-
-

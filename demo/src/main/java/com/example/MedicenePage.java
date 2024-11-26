@@ -1,14 +1,10 @@
 package com.example;
+import com.example.AddMedicinePage;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 import java.sql.*;
@@ -20,8 +16,8 @@ import java.util.List;
 public class MedicenePage {
     private Stage primaryStage;
     private int userId; // Logged-in user's ID
-    private TableView<Medicene> mediceneTable = new TableView<>();
-
+    private VBox mediceneContainer;
+    private VBox userInfoContainer;
 
     private static final String DB_URL = "jdbc:mysql://localhost:3306/medicenes"; // Your DB URL
     private static final String DB_USERNAME = "root"; // Your DB username
@@ -30,157 +26,146 @@ public class MedicenePage {
     public MedicenePage(Stage stage, int userId) {
         this.primaryStage = stage;
         this.userId = userId;
+        this.mediceneContainer = new VBox(10); // Container to hold medicine boxes
+        mediceneContainer.setAlignment(Pos.TOP_LEFT);
+        this.userInfoContainer = new VBox(10); // Container to hold user info
+        userInfoContainer.setAlignment(Pos.TOP_LEFT);
     }
 
-    public void showPage() {
-        VBox layout = new VBox(20);
-        layout.setAlignment(Pos.CENTER);
-
-        // Medicene Table
-        mediceneTable.setItems(fetchMedicenes());
-        setupTableColumns();
-
-        // Add Medicene Button
-        Button addMediceneButton = new Button("Add Medicene");
-        addMediceneButton.setOnAction(e -> showAddMediceneForm());
-
-        layout.getChildren().addAll(mediceneTable, addMediceneButton);
-
-        Scene mediceneScene = new Scene(layout, 800, 600);
-        primaryStage.setScene(mediceneScene);
-        primaryStage.setTitle("Medicenes");
-        primaryStage.show();
-    }
-
-    private void setupTableColumns() {
-        TableColumn<Medicene, String> nameColumn = new TableColumn<>("Medicene Name");
-        nameColumn.setCellValueFactory(data -> data.getValue().mediceneNameProperty());
-        mediceneTable.getColumns().add(nameColumn);
-
-        TableColumn<Medicene, String> datesColumn = new TableColumn<>("Date");
-        datesColumn.setCellFactory(column -> new TableCell<>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
-                    setGraphic(null);
-                } else {
-                    Medicene medicene = (Medicene) getTableRow().getItem();
-                    VBox checkboxes = createCheckboxesForDates(medicene.getStartDate(), medicene.getEndDate());
-                    setGraphic(checkboxes);
-                }
-            }
-        });
-        mediceneTable.getColumns().add(datesColumn);
-    }
-
-    private VBox createCheckboxesForDates(LocalDate startDate, LocalDate endDate) {
-        VBox vbox = new VBox();
-        List<LocalDate> dateList = new ArrayList<>();
-        LocalDate current = startDate;
-        while (!current.isAfter(endDate)) {
-            dateList.add(current);
-            current = current.plusDays(1);
-        }
-        for (LocalDate date : dateList) {
-            CheckBox checkBox = new CheckBox(date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-            vbox.getChildren().add(checkBox);
-        }
-        return vbox;
-    }
-
-    private void showAddMediceneForm() {
-        Stage formStage = new Stage();
-        formStage.initModality(Modality.APPLICATION_MODAL);
-        formStage.setTitle("Add Medicene");
-
-        VBox layout = new VBox(15);
-        layout.setAlignment(Pos.CENTER);
-
-        TextField nameField = new TextField();
-        nameField.setPromptText("Medicene Name");
-
-        DatePicker startDatePicker = new DatePicker();
-        startDatePicker.setPromptText("Start Date");
-
-        DatePicker endDatePicker = new DatePicker();
-        endDatePicker.setPromptText("End Date");
-
-        Button saveButton = new Button("Save");
-        saveButton.setOnAction(e -> {
-            String mediceneName = nameField.getText();
-            LocalDate startDate = startDatePicker.getValue();
-            LocalDate endDate = endDatePicker.getValue();
-
-            if (mediceneName.isEmpty() || startDate == null || endDate == null) {
-                showAlert(Alert.AlertType.ERROR, "Error", "All fields are required.");
-            } else {
-                saveMediceneToDatabase(mediceneName, startDate, endDate);
-                mediceneTable.setItems(fetchMedicenes()); // Refresh the table
-                formStage.close();
-            }
-        });
-
-        layout.getChildren().addAll(
-                new Label("Medicene Name:"), nameField,
-                new Label("Start Date:"), startDatePicker,
-                new Label("End Date:"), endDatePicker,
-                saveButton
-        );
-
-        Scene formScene = new Scene(layout, 400, 300);
-        formStage.setScene(formScene);
-        formStage.show();
-    }
-
-    private void saveMediceneToDatabase(String name, LocalDate startDate, LocalDate endDate) {
+    // Method to fetch user information (username, DOB)
+    private String getUserDOB() {
+        String dob = "";
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
-            String query = "INSERT INTO medicene (user_id, medicene_name, start_date, end_date) VALUES (?, ?, ?, ?)";
-            PreparedStatement ps = conn.prepareStatement(query);
-            ps.setInt(1, userId);
-            ps.setString(2, name);
-            ps.setDate(3, Date.valueOf(startDate));
-            ps.setDate(4, Date.valueOf(endDate));
-            ps.executeUpdate();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Error", "Failed to save medicene.");
-        }
-    }
-
-    private ObservableList<Medicene> fetchMedicenes() {
-        ObservableList<Medicene> medicenes = FXCollections.observableArrayList();
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
-            String query = "SELECT medicene_name, start_date, end_date FROM medicene WHERE user_id = ?";
+            String query = "SELECT dob FROM user WHERE iduser = ?";
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                dob = rs.getString("dob");
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return dob;
+    }
+
+    // Method to get username
+    private String getUsername() {
+        String username = "";
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+            String query = "SELECT username FROM user WHERE iduser = ?";
+            PreparedStatement ps = conn.prepareStatement(query);
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                username = rs.getString("username");
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return username;
+    }
+
+    // Method to calculate age from DOB
+    private int calculateAge(String dob) {
+        LocalDate birthDate = LocalDate.parse(dob, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        int age = LocalDate.now().getYear() - birthDate.getYear();
+        if (LocalDate.now().getDayOfYear() < birthDate.getDayOfYear()) {
+            age--;
+        }
+        return age;
+    }
+
+    // Method to fetch medicines for the selected date
+    private List<String> fetchMedicinesForDate(LocalDate selectedDate) {
+        List<String> medicines = new ArrayList<>();
+        String formattedDate = selectedDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+            String query = "SELECT medName, time FROM medicine WHERE user_id = ? AND date = ?";
+            PreparedStatement ps = conn.prepareStatement(query);
+            ps.setInt(1, userId);
+            ps.setString(2, formattedDate);
+
+            ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                String name = rs.getString("medicene_name");
-                Date startSqlDate = rs.getDate("start_date");
-                Date endSqlDate = rs.getDate("end_date");
-                
-                // Handle potential NULL values
-                LocalDate startDate = (startSqlDate != null) ? startSqlDate.toLocalDate() : null;
-                LocalDate endDate = (endSqlDate != null) ? endSqlDate.toLocalDate() : null;
-    
-                if (startDate != null && endDate != null) {
-                    medicenes.add(new Medicene(name, startDate, endDate));
-                } else {
-                    System.err.println("Skipping row with NULL start_date or end_date for medicene: " + name);
+                String medName = rs.getString("medName");
+                String time = rs.getString("time");
+                if (medName != null && !medName.isEmpty()) {
+                    medicines.add(medName + " at " + time);
                 }
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Error", "Failed to fetch medicene data.");
         }
-        return medicenes;
+        return medicines;
     }
 
-    private void showAlert(Alert.AlertType alertType, String title, String message) {
-        Alert alert = new Alert(alertType);
-        alert.setTitle(title);
-        alert.setContentText(message);
-        alert.showAndWait();
+    // Method to display medicines in a container
+    private void displayMedicines(LocalDate selectedDate) {
+        mediceneContainer.getChildren().clear(); // Clear previous medicines
+        List<String> medicines = fetchMedicinesForDate(selectedDate);
+
+        if (medicines.isEmpty()) {
+            mediceneContainer.getChildren().add(new Label("No medicines for the selected date."));
+        } else {
+            for (String medicine : medicines) {
+                VBox medicineBox = new VBox(5);
+                medicineBox.setStyle("-fx-border: 1px solid #ccc; -fx-padding: 10px; -fx-background-color: #f9f9f9; -fx-border-radius: 5px;");
+                Label medicineLabel = new Label(medicine);
+                medicineLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #333;");
+                medicineBox.getChildren().add(medicineLabel);
+                mediceneContainer.getChildren().add(medicineBox);
+            }
+        }
+    }
+
+    public void showPage() {
+        // Fetch user info
+        String username = getUsername();
+        String dob = getUserDOB();
+        int age = calculateAge(dob); // Calculate age
+
+        // Create labels for the user information
+        Label welcomeLabel = new Label("Welcome " + username);
+        welcomeLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2E8B57;");
+        
+        Label dobLabel = new Label("Your DOB: " + dob + " | Age: " + age + " years");
+        dobLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #555;");
+
+        // Add the user info labels to the user info container
+        userInfoContainer.getChildren().addAll(welcomeLabel, dobLabel);
+
+        // Create a CalendarPicker for selecting a date
+        CalendarPicker calendarPicker = new CalendarPicker();
+
+        // Fetch and display medicines when the date is selected
+        calendarPicker.getDatePicker().setOnAction(event -> {
+            LocalDate selectedDate = calendarPicker.getSelectedDate();
+            displayMedicines(selectedDate); // Display the medicines for the selected date
+        });
+
+        // Create a main layout to hold both the user info and the medicine container
+        VBox mainLayout = new VBox(20);
+        mainLayout.setStyle("-fx-background-color: #f2f9f9; -fx-padding: 20px;");
+
+        // Add Medicene Button
+        Button addMediceneButton = new Button("Add Medicine");
+        addMediceneButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px 20px; -fx-border-radius: 8;");
+    
+        // Set the action for the Add Medicine button
+        addMediceneButton.setOnAction(event -> {
+            // Open the AddMedicinePage when the button is clicked
+            AddMedicinePage addMedicinePage = new AddMedicinePage(primaryStage, userId);
+            addMedicinePage.show();  // Show the Add Medicine page
+        });
+        
+        // Add the user info, calendar, and medicine container to the main layout
+        mainLayout.getChildren().addAll(userInfoContainer, calendarPicker.createCalendarContainer(), mediceneContainer, addMediceneButton);
+
+        // Create and set the scene
+        Scene mediceneScene = new Scene(mainLayout, 800, 600);
+        primaryStage.setScene(mediceneScene);
+        primaryStage.setTitle("Medicenes");
+        primaryStage.show();
     }
 }
