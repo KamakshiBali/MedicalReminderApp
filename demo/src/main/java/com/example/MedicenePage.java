@@ -17,9 +17,9 @@ public class MedicenePage {
     private VBox mediceneContainer;
     private VBox userInfoContainer;
 
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/medicenes"; // Your DB URL
-    private static final String DB_USERNAME = "root"; // Your DB username
-    private static final String DB_PASSWORD = "root123@123"; // Your DB password
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/medicenes"; 
+    private static final String DB_USERNAME = "root"; 
+    private static final String DB_PASSWORD = "root123@123"; 
 
     public MedicenePage(Stage stage, int userId) {
         this.primaryStage = stage;

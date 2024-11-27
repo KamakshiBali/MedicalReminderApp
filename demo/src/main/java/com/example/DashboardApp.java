@@ -7,7 +7,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
-
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -37,9 +36,9 @@ public class DashboardApp extends Application {
     }
 
     // Database credentials
-    static final String DB_URL = "jdbc:mysql://localhost:3306/medicenes"; // Replace with your database URL
-    static final String DB_USERNAME = "root"; // Replace with your MySQL username
-    static final String DB_PASSWORD = "root123@123"; // Replace with your MySQL password
+    static final String DB_URL = "jdbc:mysql://localhost:3306/medicenes"; 
+    static final String DB_USERNAME = "root";
+    static final String DB_PASSWORD = "root123@123"; 
 
     private Stage primaryStage;
 
@@ -116,6 +115,7 @@ public class DashboardApp extends Application {
         signupButton.setOnAction(e -> {
             String username = usernameField.getText();
             String password = passwordField.getText();
+            String hashedPassword = PasswordHasher.hashPassword(password); 
             String dob = dobField.getText();
             String email = emailField.getText();
             String mobile = mobileField.getText();
@@ -126,12 +126,34 @@ public class DashboardApp extends Application {
                 return;
             }
 
+            // no weak password alloweddd
+            if (password.length() < 8 || 
+            !password.matches(".*\\d.*") ||    
+            !password.matches(".*[!@#$%^&*()].*")){
+            showAlert(Alert.AlertType.ERROR, "Weak Password!", 
+                "Password should be at least 8 characters long \n Include at least one number and one special character.");
+                return;
+            }
+
+            if (mobile.length()<10){
+                showAlert(Alert.AlertType.ERROR, "Wrong Number!", 
+                "Please enter valid mobile number");
+                return;
+            }
+
+            // email validation regex
+            if (!email.matches("^[\\w._%+-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")) {
+                showAlert(Alert.AlertType.ERROR, "Invalid Email!", 
+                    "Email should be in the format: meow@gmail.com.");
+                    return;
+            }
+
+
             try (Connection conn = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
-                // Insert user into database
                 String query = "INSERT INTO user (username, password, dob, email, mobile, gender) VALUES (?, ?, ?, ?, ?, ?)";
                 PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS); // Retrieve the generated user ID
                 ps.setString(1, username);
-                ps.setString(2, password);
+                ps.setString(2, hashedPassword);
                 ps.setDate(3, Date.valueOf(dob));
                 ps.setString(4, email);
                 ps.setString(5, mobile);
@@ -139,16 +161,16 @@ public class DashboardApp extends Application {
 
                 ps.executeUpdate();
 
-                // Get the generated user ID
+                // get the generated user ID
                 ResultSet generatedKeys = ps.getGeneratedKeys();
                 int userId = -1;
                 if (generatedKeys.next()) {
-                    userId = generatedKeys.getInt(1); // Retrieve the auto-generated ID
+                    userId = generatedKeys.getInt(1); 
                 }
 
                 if (userId != -1) {
                     showAlert(Alert.AlertType.INFORMATION, "Success", "Signup successful!");
-                    showMedicenePage(userId); // Redirect to Medicene page with the new user's ID
+                    showMedicenePage(userId); // this line redirects to Medicene page with the new user's ID
                 } else {
                     showAlert(Alert.AlertType.ERROR, "Error", "Could not retrieve user ID.");
                 }
@@ -199,24 +221,28 @@ public class DashboardApp extends Application {
             }
 
             try (Connection conn = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
-                String query = "SELECT * FROM user WHERE username = ? AND password = ?";
+                String query = "SELECT * FROM user WHERE username = ?";
                 PreparedStatement ps = conn.prepareStatement(query);
                 ps.setString(1, username);
-                ps.setString(2, password);
 
                 ResultSet rs = ps.executeQuery();
                 if (rs.next()) {
                     int userId = rs.getInt("iduser"); // Assuming "id" is the user ID column in the database
-                    showAlert(Alert.AlertType.INFORMATION, "Success", "Login successful!");
-                    showMedicenePage(userId); // Pass userId to MedicenePage
+                    String storedHashedPassword = rs.getString("password");
+                    if (PasswordHasher.verifyPassword(password, storedHashedPassword)) {
+                        showAlert(Alert.AlertType.INFORMATION, "Success", "Login successful!");
+                        showMedicenePage(userId); // Pass userId to MedicenePage
+                    } else {
+                        showAlert(Alert.AlertType.ERROR, "Error", "Incorrect password.");
+                    }
                 } else {
-                    showAlert(Alert.AlertType.ERROR, "Error", "User not found or incorrect password.");
+                    showAlert(Alert.AlertType.ERROR, "Error", "User not found.");
                 }
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-                showAlert(Alert.AlertType.ERROR, "Error", "Database error occurred.");
-            }
-        });
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    showAlert(Alert.AlertType.ERROR, "Error", "Database error occurred.");
+                }
+            });
 
         Button backButton = new Button("Back");
         backButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px 20px; -fx-border-radius: 10;");
@@ -233,7 +259,7 @@ public class DashboardApp extends Application {
 
     private void showMedicenePage(int userId) {
         MedicenePage medicenePage = new MedicenePage(primaryStage, userId);
-        medicenePage.showPage(); // Switch to MedicenePage
+        medicenePage.showPage();
     }
 
     private GridPane createFormGridPane() {

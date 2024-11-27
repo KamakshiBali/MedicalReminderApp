@@ -10,7 +10,6 @@ import javafx.stage.Stage;
 
 import java.sql.*;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class AddMedicinePage {
@@ -90,7 +89,13 @@ public class AddMedicinePage {
         // Add medicine button
         Button addMedicineButton = new Button("Add Medicine");
         addMedicineButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10px;");
-        addMedicineButton.setOnAction(e -> addMedicine());
+        addMedicineButton.setOnAction(e -> {
+            addMedicine();
+            MedicenePage medicenePage = new MedicenePage(primaryStage, userId);
+            // Show the page with the current date
+            medicenePage.showPage();
+        });
+            
 
         Button backButton = new Button("Back");
         backButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px 20px; -fx-border-radius: 10;");
@@ -149,7 +154,7 @@ public class AddMedicinePage {
     
         // Add input validation for time format
         timeField.textProperty().addListener((observable, oldValue, newValue) -> {
-            boolean valid = newValue.matches("^([1-9]|1[0-2]):([0-5][0-9])$"); // Validation for "1:30" or "12:45"
+            boolean valid = newValue.matches("^([01]?\\d|2[0-3]):([0-5]\\d)$");
             addButton.setDisable(!valid); // Enable Add button only if the format is correct
         });
     
