@@ -128,8 +128,8 @@ public class DashboardApp extends Application {
 
             // no weak password alloweddd
             if (password.length() < 8 || 
-            !password.matches(".*\\d.*") ||    
-            !password.matches(".*[!@#$%^&*()].*")){
+            !password.matches(".\\d.") ||    
+            !password.matches(".[!@#$%^&()].*")){
             showAlert(Alert.AlertType.ERROR, "Weak Password!", 
                 "Password should be at least 8 characters long \n Include at least one number and one special character.");
                 return;
